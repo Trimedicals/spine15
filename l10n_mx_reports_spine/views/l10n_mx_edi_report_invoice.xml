@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- QWeb Reports -->
+    <template id="report_invoice_document_mx_inh" inherit_id="l10n_mx_edi.report_invoice_document_mx">
+        <xpath expr="//div[hasclass('digital-stamp-content')][last()-1]" position="inside">
+            <t t-set="xml" t-value="cfdi_vals.get('cfdi_node')"/>
+            <span> | Versión:</span> <span t-esc="xml.get('Version')"/>
+            <span> | Efecto de Comprobante:</span> <span t-esc="xml.get('TipoDeComprobante')"/>
+        </xpath>
+    </template>
+</odoo>

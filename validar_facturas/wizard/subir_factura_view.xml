@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="vf_subir_form" model="ir.ui.view">
+            <field name="name">vf.subir.form</field>
+            <field name="model">validar_facturas.subir.factura</field>
+            <field name="arch" type="xml">
+                <form string="Subir archivos">
+                    <group>
+                        <field name="xml" required="1"/>
+                        <field name="pdf" required="1"/>
+                        <field name="host" invisible="1" />
+                        <field name="user" invisible="1"/>
+                        <field name="password" invisible="1"/>
+                    </group>
+                    <group  attrs="{'invisible':[('user','!=',False),('password','!=',False),('host','!=',False)]}" >
+                        <div>
+                            <strong><p class="text-danger">Info!</p></strong> 
+                            <p class="text-danger">No se encuentran los datos de validacion para el pac (pac_host,pac_user,pac_password) </p>
+                        </div>
+                    </group>
+                    <footer>
+                        <button type="special" special="cancel" string="Cancelar"/>
+                        <button type="object" 
+                                name="action_upload" 
+                                string="Subir archivos"  attrs="{'invisible':['|','|',('user','=',False),('password','=',False),('host','=',False)]}" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+        <record id="vf_subir_info_sat_form" model="ir.ui.view">
+            <field name="name">vf_subir_info_sat_form</field>
+            <field name="model">validar_facturas.subir.factura</field>
+            <field name="arch" type="xml">
+                <form string="Subir archivos">
+                    <field name="show_lines" invisible="1"/>
+                    <field name="uuid_duplicado" invisible="1"/>
+                    <notebook name="info_sat" attrs="{'invisible':[('show_lines','=',True)]}">
+                        <page string="Info. SAT">
+                            <group >
+                                <field name="reporte_validation_xml" colspan="4" nolabel="1" readonly="1" />
+                                <newline />
+                                <group  attrs="{'invisible':[('uuid_duplicado','!=',False)]}" >
+                                    <group>
+                                    <field name="codigo" readonly="1" style="color: red;" attrs="{'invisible':[('estado','=','Vigente')]}"/>
+                                    <field name="estado" readonly="1" style="color: red;" attrs="{'invisible':[('estado','=','Vigente')]}"/>
+                                    <field name="codigo" readonly="1" attrs="{'invisible':[('estado','!=','Vigente')]}"/>
+                                    <field name="estado" readonly="1" attrs="{'invisible':[('estado','!=','Vigente')]}"/>
+                       
+                                    </group>
+                                </group>
+                                <group  attrs="{'invisible':[('uuid_duplicado','=',False)]}" >
+                                    <div>
+                                        <strong><p class="text-danger">Info!</p></strong> 
+                                       <p class="text-danger"> El UUID ya existe en el Sistema: <field name="uuid" readonly="1" class="oe_inline"  /></p>
+                                    </div>
+                                </group>
+                            </group>
+                            <field name="next" invisible="1"/>
+                        </page>
+                        <page string="Validacion Estructura XML contra XSD">
+                            <field name="estructura_valida"/>
+                            <field name="message_validation_xml" colspan="4" nolabel="1" readonly="1" />
+                        </page>
+
+                        <page string="Validacion en PAC">
+                           <group>
+                               <group>
+                                 <field name="pac_xml_valido"/>
+                                 <field name="pac_sello_valido"/>
+                                 <field name="pac_sello_sat_valido"/>
+                                 <field name="pac_estado"/>
+                                 <field name="pac_cod_estatus"/>
+                               </group>
+                            <field name="message_validation_pac" colspan="4" nolabel="1" readonly="1" />
+                           </group>
+
+                        </page>
+
+                    </notebook> 
+                    <footer>
+                        <button type="special" special="cancel" string="Cancelar"/>
+                        <button type="object" name="action_accept" string="Terminar validación"  attrs="{'invisible':[('uuid_duplicado','=', True)]}"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        <record id="vf_crear_info_sat_form" model="ir.ui.view">
+            <field name="name">vf_crear_info_sat_form</field>
+            <field name="model">validar_facturas.subir.factura</field>
+            <field name="arch" type="xml">
+                <form string="Subir archivos">
+                    <field name="show_lines" invisible="1"/>
+                    <notebook name="info_sat" attrs="{'invisible':[('show_lines','=',True)]}">
+                        <page string="Info. SAT">
+                            <group >
+                                <field name="reporte_validation_xml" colspan="4" nolabel="1" readonly="1" />
+                                <newline />
+                                <group>
+                                    <field name="codigo" readonly="1" style="color: red;" attrs="{'invisible':[('estado','=','Vigente')]}"/>
+                                    <field name="estado" readonly="1" style="color: red;" attrs="{'invisible':[('estado','=','Vigente')]}"/>
+                                    <field name="codigo" readonly="1" attrs="{'invisible':[('estado','!=','Vigente')]}"/>
+                                    <field name="estado" readonly="1" attrs="{'invisible':[('estado','!=','Vigente')]}"/>
+                       
+                                </group>
+                            </group>
+                            <field name="next" invisible="1"/>
+                            <group attrs="{'invisible':[('next','=',False),('ignore_pac_error','=',False)]}">
+                                <field name="moneda" style="width:40%%" attrs="{'required':[('codigo','!=',False)]}"/>
+                                <field name="product_id" style="width:40%%" attrs="{'required':[('codigo','!=',False)]}"/>
+                                <field name="journal_id" style="width:40%%" attrs="{'required':[('codigo','!=',False)]}"/>
+                            </group>
+                        </page>
+                        <page string="Validacion Estructura XML contra XSD">
+                            <field name="estructura_valida"/>
+                            <field name="message_validation_xml" colspan="4" nolabel="1" readonly="1" />
+                        </page>
+                        <page string="Validacion en PAC">
+                           <group>
+                               <group>
+                                 <field name="pac_xml_valido"/>
+                                 <field name="pac_sello_valido"/>
+                                 <field name="pac_sello_sat_valido"/>
+                                 <field name="pac_estado"/>
+                                 <field name="pac_cod_estatus"/>
+                               </group>
+                            <field name="message_validation_pac" colspan="4" nolabel="1" readonly="1" />
+                           </group>
+                           <group>
+                               <group>
+                                   <field name="ignore_pac_error" attrs="{'invisible':[('pac_xml_valido','=',True)]}"/>
+                               </group>
+                           </group>
+
+                        </page>
+
+
+
+                    </notebook> 
+                    <footer>
+                        <button type="special" special="cancel" string="Cancelar"/>
+			<button type="object" name="force_next" string="Forzar Validación" attrs="{'invisible':[('next','=',True)]}"/>
+                        <button type="object" name="action_procesar" string="Aceptar" attrs="{'invisible':[('next','=',False),('ignore_pac_error','=',False)]}"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+
+        <!-- Crear Factura de Proveedor-->
+        <record id="action_invoice_create_validar" model="ir.actions.act_window">
+            <field name="name">Validar Facturas</field>
+            <field name="res_model">validar_facturas.subir.factura</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_id" ref="vf_subir_form"/>
+            <field name="context">{'inv_create': True}</field>
+            <field name="target">new</field>
+        </record>
+
+
+
+        <menuitem 
+            action="action_invoice_create_validar" 
+            id="menu_action_invoice_create_validar" 
+            parent="account.menu_finance_payables" 
+            sequence="1"/>
+
+        <!-- Crear Factura  de Clientes-->
+        <record id="action_invoice_import_client_invoice" model="ir.actions.act_window">
+            <field name="name">Importar Facturas</field>
+            <field name="res_model">validar_facturas.subir.factura</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_id" ref="vf_subir_form"/>
+            <field name="context">{'inv_create': True, 'out_invoice': True}</field>
+            <field name="target">new</field>
+        </record>
+
+
+
+        <menuitem 
+            action="action_invoice_import_client_invoice" 
+            id="menu_action_invoice_import_client_invoice" 
+            parent="account.menu_finance_receivables" 
+            sequence="1"/>
+
+
+
+    </data>
+</odoo>
+

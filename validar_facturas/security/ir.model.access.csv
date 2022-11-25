@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_vat_blacklist_user,vat_blacklist_user,model_vat_blacklist,,1,1,1,1
+access_subir_factura_user,subir_factura_user,model_validar_facturas_subir_factura,,1,1,1,1
+access_subir_factura_line_user,subir_factura_line_user,model_validar_facturas_subir_factura_line,,1,1,1,1

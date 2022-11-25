@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record model="ir.ui.view" id="view_move_form_inh">
+            <field name="name">view_move_form_inh</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+
+
+		    <xpath expr="//label[@for='partner_id']/parent::div" position="replace">
+			    <div class="o_td_label">
+               			   <label for="partner_id" string="Pagador" style="font-weight:bold;" attrs="{'invisible': [('move_type', 'not in', ('out_invoice', 'out_refund', 'out_receipt'))]}"/>
+	          		   <label for="partner_id" string="Proveedor" style="font-weight:bold;" attrs="{'invisible': [('move_type', 'not in', ('in_invoice', 'in_refund', 'in_receipt'))]}"/>
+		            </div>
+            	   </xpath>
+                   <notebook position="inside">
+                      <page string="Datos Cirugía">
+			    <group>
+				      <group>
+					      <field name="paciente_id" attrs="{'readonly':[('state','not in',['draft'])]}"/>
+					      <field name="surgery_city_id" attrs="{'readonly':[('state','not in',['draft'])]}" />
+					      <field name="surgery_type" attrs="{'readonly':[('state','not in',['draft'])]}" />
+					      <field name="procedure_type" attrs="{'readonly':[('state','not in',['draft'])]}" />
+					      <field name="episode_number" attrs="{'readonly':[('state','not in',['draft'])]}" />
+					      <field name="commitment_date" attrs="{'readonly':[('state','not in',['draft'])]}"/>
+				      </group>
+				      <group>
+					      <field name="hospital_id" widget="res_partner_many2one" context="{'show_address': 1, 'show_vat': True}" options="{'always_reload': True}" attrs="{'readonly':[('state','not in',['draft'])]}"/> 
+				      </group>
+			      </group>
+		      </page>
+                      <page string="Datos Comisiones">
+			    <group>
+				      <group>
+					      <field name="doctor_id" widget="res_partner_many2one" context="{'show_address': 1, 'show_vat': True}" options="{'always_reload': True}" attrs="{'readonly':[('state','not in',['draft'])]}"/> 
+					      <field name="commission_agent_id" widget="res_partner_many2one" context="{'show_address': 1, 'show_vat': True}" options="{'always_reload': True}" attrs="{'readonly':[('state','not in',['draft'])]}"/> 
+				      </group>
+                                      <group>
+					      <field name="first_adviser_id" widget="res_partner_many2one" context="{'show_address': 1, 'show_vat': True}" options="{'always_reload': True}" attrs="{'readonly':[('state','not in',['draft'])]}"/> 
+					      <field name="second_adviser_id" widget="res_partner_many2one" context="{'show_address': 1, 'show_vat': True}" options="{'always_reload': True}" attrs="{'readonly':[('state','not in',['draft'])]}"/> 
+				      </group>
+			      </group>
+		      </page>
+
+                   </notebook>
+            </field>
+        </record>
+    </data>
+</odoo>
+
+
+

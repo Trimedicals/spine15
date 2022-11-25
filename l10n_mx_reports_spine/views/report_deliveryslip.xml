@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <!-- Formato de Papel -->
+        <record id="delivery_order_paperformat_spine" model="report.paperformat">
+            <field name="page_height">0</field>
+            <field name="page_width">0</field>
+            <field name="header_spacing">25</field>
+            <field name="margin_top">27</field>
+            <field name="margin_right">7</field>
+            <field name="margin_bottom">15</field>
+            <field name="margin_left">7</field>
+            <field name="header_line">False</field>
+            <field name="name">US Letter Delivery Order Spine</field>
+            <field name="orientation">Portrait</field>
+            <field name="dpi">90</field>
+            <field name="default">True</field>
+            <field name="format">Letter</field>
+        </record>
+
+        <!-- QWeb Reports -->
+
+        <record id="delivery_order_spine" model="ir.actions.report">
+            <field name="name">Remision Spine</field>
+            <field name="model">stock.picking</field>
+            <field name="report_type">qweb-pdf</field>
+	    <field name="print_report_name">(object.name)</field>
+            <field name="report_name">l10n_mx_reports_spine.report_delivery_order_spine</field>
+            <field name="report_file">l10n_mx_reports_spine.report_delivery_order_spine</field>
+            <field name="binding_model_id" ref="stock.model_stock_picking"/>
+            <field name="binding_type">report</field>
+            <field name="paperformat_id" ref="l10n_mx_reports_spine.delivery_order_paperformat_spine"/>
+            <field name="attachment">(object.name or '').replace('/','')+'.pdf'</field>
+        </record>
+
+      </data>
+
+
+
+
+    <data>
+
+    <template id="report_delivery_document_spine">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <t t-set="o" t-value="o.with_context(lang=o.partner_id.lang)" />
+                <t t-set="partner" t-value="o.partner_id or (o.move_lines and o.move_lines[0].partner_id) or False"/>
+
+
+	<div class="row">
+		<div class="col-7 mt-2">
+			<div class='row'>
+				<div class="col-4">
+					<strong>Hospital:</strong>
+				</div>
+				<div class="col-8">
+                                    <span t-field="o.sale_id.hospital_id"/>
+				</div>
+			</div>
+			<div class='row'>
+				<div class="col-4">
+					<strong>Doctor:</strong>
+				</div>
+				<div class="col-8">
+                                    <span t-field="o.sale_id.doctor_id"/>
+				</div>
+			</div>
+			<div class='row'>
+				<div class="col-4">
+					<strong>Paciente:</strong>
+				</div>
+				<div class="col-8">
+                                    <span t-field="o.sale_id.paciente_id"/>
+				</div>
+			</div>
+			<div class='row'>
+				<div class="col-4">
+					<strong>Fecha Cirugía:</strong>
+				</div>
+				<div class="col-8">
+                                    <span t-field="o.sale_id.commitment_date"/>
+				</div>
+			</div>
+			<div class='row'>
+				<div class="col-4">
+					<strong>Asesor:</strong>
+				</div>
+				<div class="col-8">
+					<span t-field="o.sale_id.first_adviser_id"/>
+				</div>
+			</div>
+
+    		</div>
+		<div class="col-2 mt-2"  >
+			<div class='row'>
+				<div class="col-8">
+					<strong>Episodio:</strong>
+				</div>
+				<div class="col-4">
+                                    <span t-field="o.sale_id.episode_number"/>
+				</div>
+			</div>
+		
+		</div>
+		<div class="col-3 mt-2"  >
+			<t t-if="partner">
+			<span			t-field="o.partner_id"
+				t-options='{"widget": "contact",  "fields":["address","name"], "no_marker": True}' />
+			<p t-if="o.partner_id.vat"><t t-esc="o.company_id.account_fiscal_country_id.vat_label or 'Tax ID'"/>: <span t-field="o.partner_id.vat"/></p>
+		       </t>
+		</div>
+	</div>
+     
+	
+
+	<div class="page">
+                   <table class="table table-sm table-striped mt48 o_main_table" t-if="o.state!='done'" name="stock_move_table">
+                        <thead>
+                            <tr>
+                 		<div class="row mt32">
+		                	<div class="col-6">
+                  				<h2>
+		          		         	<span t-field="o.name"/>
+			                   	</h2>
+                      			</div>
+		                   	<div class="col-6 text-right">
+                      				<h2>
+		                     			<span t-esc="o.env['product.category'].browse(category_id).name"/>
+                       				</h2>
+		                     	</div>
+                       		</div>
+                            </tr>
+                            <tr>
+                                <div class="row mt32 mb32">
+                                    <div t-if="o.origin" class="col-auto" name="div_origin">
+                                        <strong>Orden:</strong>
+                                            <p t-field="o.origin"/>
+                                    </div>
+                                    <div t-if="o.state" class="col-auto" name="div_sched_date">
+                                        <strong>Fecha de Envío:</strong>
+                                            <t t-if="o.state == 'done'">
+                                                <p t-field="o.date_done"/>
+                                            </t>
+                                            <t t-if="o.state != 'done'">
+                                                <p t-field="o.scheduled_date"/>
+                                            </t>
+                                   </div>
+                               </div>
+ 
+                            </tr>
+                            <tr>
+		   		    <th name="th_description" class="text-left">Producto</th>
+		   		    <th name="th_clavesat" class="text-left">Clave SAT</th>
+	    			    <th name="th_alg" class="text-left">ALG</th>
+	    			    <th name="th_quantity" class="text-right">Cantidad</th>
+				    <th name="th_precio" class="text-right">Precio Unit</th>
+	    			    <th name="th_subtotal" class="text-right">Consumo</th>
+			    </tr>
+                        </thead>
+                        <tbody>
+                            <t t-set="lines" t-value="o.move_lines.filtered(lambda x: x.product_uom_qty)"/>
+			    <t t-set="total_qty" t-value="sum([m.quantity_done for m in lines.filtered(lambda x: x.product_id.categ_id.id == category_id)])"/>
+
+                            <tr t-foreach="lines.filtered(lambda x: x.product_id.categ_id.id == category_id)" t-as="move">
+                                <td>
+                                    <span t-field="move.product_id.name"/>
+                                </td>
+				<td>
+    					<span t-field="move.product_id.unspsc_code_id.code"/>
+    				</td>
+                                <td>
+                                    <span t-field="move.product_id.x_studio_alg"/>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="move.quantity_done"/>
+                                    <span t-field="move.product_uom"/>
+			        </td>
+			        <td class="text-right">
+				    <span t-field="move.sale_line_id.price_unit" 
+								t-options='{"widget": "monetary", "display_currency": move.sale_line_id.order_id.pricelist_id.currency_id}'/>
+			        </td>
+			        <td>
+			        </td>
+			</tr>
+					<tr>
+						<td/>
+						<td/>
+						<td class="text-right">
+							<strong>Total:</strong>
+						</td>
+						<td class="text-right">
+							<strong><span t-esc="'%.2f'%(total_qty)"/></strong>
+						</td>
+						<td/>
+						<td/>
+					</tr>
+
+                        </tbody>
+                    </table>
+                    <table class="table table-sm table-striped mt48 o_main_table" t-if="o.move_line_ids and o.state=='done'" name="stock_move_line_table">
+                        <t t-set="has_serial_number" t-value="False"/>
+                        <t t-set="has_serial_number" t-value="o.move_line_ids.mapped('lot_id')" groups="stock.group_lot_on_delivery_slip"/>
+                        <thead>
+
+                            <tr>
+                 		<div class="row mt32">
+		                	<div class="col-6">
+                  				<h2>
+		          		         	<span t-field="o.name"/>
+			                   	</h2>
+                      			</div>
+		                   	<div class="col-6 text-right">
+                      				<h2>
+		                     			<span t-esc="o.env['product.category'].browse(category_id).name"/>
+                       				</h2>
+		                     	</div>
+                       		</div>
+                            </tr>
+                            <tr>
+                                <div class="row mt32 mb32">
+                                    <div t-if="o.origin" class="col-auto" name="div_origin">
+                                        <strong>Orden:</strong>
+                                            <p t-field="o.origin"/>
+                                    </div>
+                                    <div t-if="o.state" class="col-auto" name="div_sched_date">
+                                        <strong>Fecha de Envío:</strong>
+                                            <t t-if="o.state == 'done'">
+                                                <p t-field="o.date_done"/>
+                                            </t>
+                                            <t t-if="o.state != 'done'">
+                                                <p t-field="o.scheduled_date"/>
+                                            </t>
+                                   </div>
+                               </div>
+ 
+                            </tr>
+
+
+
+                            <tr>
+		   		    <th style="width: 35%;" name="th_description" class="text-left">Producto</th>
+		   		    <th style="width: 10%;" name="th_clavesat" class="text-left">Clave SAT</th>
+				    <th  style="width: 12%;" name="th_alg" class="text-left">ALG</th>
+	    			    <th style="width: 12%;"  name="th_quantity" class="text-right">Cantidad</th>
+				    <t name="lot_serial" t-if="has_serial_number">
+					    <th style="width: 10%;" >
+						    Lote
+					    </th>
+    				    </t>				    
+				    <th  style="width: 10%;" name="th_precio" class="text-right">Precio Unit</th>
+	    			    <th  style="width: 11%;" name="th_subtotal" class="text-right">Consumo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+			                <t t-set="total_qty" t-value="sum([m.qty_done for m in o.move_line_ids.filtered(lambda x: x.product_id.categ_id.id == category_id)])"/>
+					<tr t-foreach="o.move_line_ids.filtered(lambda x : x.product_id.categ_id.id == category_id)" t-as="move_line">
+						<td>
+		    					<span t-field="move_line.product_id.name"/>
+						</td>
+						<td>
+		    					<span t-field="move_line.product_id.unspsc_code_id.code"/>
+						</td>
+						<td>
+							<span t-field="move_line.product_id.x_studio_alg"/>
+						</td>
+						<td class="text-right">
+		    					<span t-field="move_line.qty_done"/>
+		    					<span t-field="move_line.product_uom_id"/>
+		    				</td>
+		    				<t t-if="has_serial_number" name="move_line_lot">
+		    					<td><span t-field="move_line.lot_id.name"/></td>
+		    				</t>
+						<td class="text-right">
+							<span t-field="move_line.move_id.sale_line_id.price_unit" 
+								t-options='{"widget": "monetary", "display_currency": move_line.move_id.sale_line_id.order_id.pricelist_id.currency_id}'
+							
+								/>
+						</td>
+						<td/>
+					</tr>
+					<tr>
+						<td/>
+						<td/>
+						<td class="text-right">
+							<strong>Total:</strong>
+						</td>
+						<td class="text-right">
+							<strong><span t-esc="'%.2f'%(total_qty)"/></strong>
+						</td>
+						<td t-if="has_serial_number"/>
+						<td/>
+						<td/>
+					</tr>
+                           
+                        </tbody>
+                    </table>
+                    <t t-set="backorders" t-value="o.backorder_ids.filtered(lambda x: x.state not in ('done', 'cancel'))"/>
+                    <t t-if="o.backorder_ids and backorders">
+                        <p class="mt-5">
+                            <span>Cantidades Pendientes:</span>
+                        </p>
+                        <table class="table table-sm" name="stock_backorder_table" style="table-layout: fixed;">
+                            <thead>
+                                <tr>
+                                    <th name="th_sb_product"><strong>Producto</strong></th>
+                                    <th/>
+                                    <th name="th_sb_quantity" class="text-center"><strong>Cantidad</strong></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="backorders" t-as="backorder">
+                                    <t t-set="bo_lines" t-value="backorder.move_lines.filtered(lambda x: x.product_uom_qty and x.product_id.categ_id == category_id)"/>
+                                    <tr t-foreach="bo_lines" t-as="bo_line">
+                                        <td class="w-auto">
+                                            <span t-field="bo_line.product_id"/>
+                                            <p t-if="bo_line.description_picking != bo_line.product_id.name and bo_line.description_picking != bo_line.product_id.display_name">
+                                                <span t-field="bo_line.description_picking"/>
+                                            </p>
+                                        </td>
+                                        <td/>
+                                        <td class="text-center w-auto">
+                                            <span t-field="bo_line.product_uom_qty"/>
+                                            <span t-field="bo_line.product_uom"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+		</t>
+
+
+	    <div class="row">
+		    <div class="col-12" >
+			    Observaciones :
+                    <p class="text-justify" t-field="o.sale_id.note" />
+		    </div>
+	    </div>
+	    <div class="row mt32">
+		    <div class="col-12" name="conditions">
+			    <p class="font-weight-bold">Nota: Precios más IVA</p>
+			    <p class="text-justify font-weight-bold">El instrumental para la colocación de estos implantes se presenta en perfectas condiciones y solo para el evento convenido,
+				    su devolución debe hacerse limpio y completo, de lo contrario se cobrara una cuota por aseo, la pérdida o daño de una o más piezas
+			    tendrán que ser pagadas de inmediato, a los precios por Trimédicals establecidos.</p>
+		    </div>
+	    </div>
+
+                    <div t-if="o.signature" class="mt32 ml64 mr4" name="signature">
+                        <div class="offset-8">
+                            <strong>Firma</strong>
+                        </div>
+                        <div class="offset-8">
+                            <img t-att-src="image_data_uri(o.signature)" style="max-height: 4cm; max-width: 8cm;"/>
+                        </div>
+                        <div class="offset-8 text-center">
+                            <p t-field="o.partner_id.name"/>
+                        </div>
+                    </div>
+                </div>
+            </t>
+         </t>
+    </template>
+
+
+    <template id="report_delivery_order_spine">
+        <t t-foreach="docs" t-as="o">
+           <t t-set="lines" t-value="o.move_lines.filtered(lambda x: x.product_uom_qty)"/>
+           <t t-set="categories" t-value="list(dict.fromkeys([m.product_id.categ_id.id for m in lines]))"/>
+	   <t t-foreach="categories" t-as="category_id">
+		   <t t-call="l10n_mx_reports_spine.report_delivery_document_spine" t-lang="o.partner_id.lang"/>
+	   </t>
+        </t>
+</template>
+</data>
+</odoo>

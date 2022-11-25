@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <data>
+        <!-- Formato de Papel -->
+        <record id="sale_order_paperformat_spine" model="report.paperformat">
+            <field name="page_height">0</field>
+            <field name="page_width">0</field>
+            <field name="header_spacing">25</field>
+            <field name="margin_top">27</field>
+            <field name="margin_right">7</field>
+            <field name="margin_bottom">15</field>
+            <field name="margin_left">7</field>
+            <field name="header_line">False</field>
+            <field name="name">US Letter Sale Order Spine</field>
+            <field name="orientation">Portrait</field>
+            <field name="dpi">90</field>
+            <field name="default">True</field>
+            <field name="format">Letter</field>
+        </record>
+
+        <!-- QWeb Reports -->
+
+        <record id="sale_order_spine" model="ir.actions.report">
+            <field name="name">Remision Spine</field>
+            <field name="model">sale.order</field>
+            <field name="report_type">qweb-pdf</field>
+	    <field name="print_report_name">(object.name)</field>
+            <field name="report_name">l10n_mx_reports_spine.report_sale_order_spine</field>
+            <field name="report_file">l10n_mx_reports_spine.report_sale_order_spine</field>
+            <field name="binding_model_id" ref="sale.model_sale_order"/>
+            <field name="binding_type">report</field>
+            <field name="paperformat_id" ref="l10n_mx_reports_spine.delivery_order_paperformat_spine"/>
+            <field name="attachment">(object.name or '').replace('/','')+'.pdf'</field>
+        </record>
+
+    </data>
+
+
+    <data>
+
+        <template id="report_sale_order_spine_document">
+        
+    <t t-call="web.external_layout">
+        <t t-set="doc" t-value="doc.with_context(lang=doc.partner_id.lang)" />
+        <t t-set="forced_vat" t-value="doc.fiscal_position_id.foreign_vat"/> <!-- So that it appears in the footer of the report instead of the company VAT if it's set -->
+     	<div class="row">
+		<div class="col-4 mt-2">
+			<div class='row'>
+				<div class="col-6">
+					<strong>Hospital:</strong>
+				</div>
+				<div class="col-6">
+                                    <span t-field="doc.hospital_id"/>
+				</div>
+			</div>
+			<div class='row'>
+				<div class="col-6">
+					<strong>Doctor:</strong>
+				</div>
+				<div class="col-6">
+                                    <span t-field="doc.doctor_id"/>
+				</div>
+			</div>
+			<div class='row'>
+				<div class="col-6">
+					<strong>Paciente:</strong>
+				</div>
+				<div class="col-6">
+                                    <span t-field="doc.paciente_id"/>
+				</div>
+			</div>
+			<div class='row'>
+				<div class="col-6">
+					<strong>Fecha Cirugía:</strong>
+				</div>
+				<div class="col-6">
+                                    <span t-field="doc.commitment_date"/>
+				</div>
+			</div>
+			<div class='row'>
+				<div class="col-6">
+					<strong>Asesor:</strong>
+				</div>
+				<div class="col-6">
+					<span t-field="doc.first_adviser_id"/>
+				</div>
+			</div>
+
+    		</div>
+		<div class="col-4 mt-2"  >
+			<div class='row'>
+				<div class="col-6">
+					<strong>No. Remisión:</strong>
+				</div>
+				<div class="col-6">
+                                    <span t-esc="'No Remision'"/>
+				</div>
+			</div>
+			<div class='row'>
+				<div class="col-6">
+					<strong>Episodio:</strong>
+				</div>
+				<div class="col-6">
+                                    <span t-field="doc.episode_number"/>
+				</div>
+			</div>
+			<div class='row'>
+				<div class="col-6">
+					<strong>Nombre del Equipo / Sistema:</strong>
+				</div>
+				<div class="col-6">
+                                    <span t-esc="'Equipo o sistema'"/>
+				</div>
+			</div>
+		
+		</div>
+		<div class="col-4 mt-2"  >
+			<span			t-field="doc.partner_id"
+				t-options='{"widget": "contact",  "fields":["address","name"], "no_marker": True}' />
+				<p t-if="doc.partner_id.vat"><t t-esc="doc.company_id.account_fiscal_country_id.vat_label or 'Tax ID'"/>: <span t-field="doc.partner_id.vat"/></p>
+		</div>
+	</div>
+     
+	
+        <div class="page">
+            <div class="oe_structure"/>
+
+            <h2 class="mt16">
+                <t t-if="not (env.context.get('proforma', False) or is_pro_forma)">
+                    <span t-if="doc.state not in ['draft','sent']">Número de orden </span>
+                    <span t-if="doc.state in ['draft','sent']">Presupuesto # </span>
+                </t>
+                <span t-field="doc.name"/>
+            </h2>
+
+            <div class="row mt32 mb32" id="informations">
+                <div  class="col-auto col-3 mw-100 mb-2">
+                    <strong>Fecha de la Orden:</strong>
+                    <p class="m-0" t-field="doc.date_order"/>
+                </div>
+                <div t-if="doc.user_id.name" class="col-auto col-3 mw-100 mb-2">
+                    <strong>Vendedor:</strong>
+                    <p class="m-0" t-field="doc.user_id"/>
+                </div>
+            </div>
+
+            <!-- Is there a discount on at least one line? -->
+            <t t-set="display_discount" t-value="any(l.discount for l in doc.order_line)"/>
+
+            <table class="table table-sm o_main_table">
+                <!-- In case we want to repeat the header, remove "display: table-row-group" -->
+                <thead style="display: table-row-group">
+                    <tr>
+                        <th name="th_description" class="text-left">Descrición</th>
+                        <th name="th_alg" class="text-left">ALG</th>
+			<th name="th_sku" class="text-left">Clave (SKU)</th>
+                        <th name="th_quantity" class="text-right">Cantidad</th>
+                        <th name="th_priceunit" class="text-right">Precio Unitario</th>
+                        <th name="th_subtotal" class="text-right">Consumo</th>
+                    </tr>
+                </thead>
+                <tbody class="sale_tbody">
+
+                    <t t-set="current_subtotal" t-value="0"/>
+
+                    <t t-foreach="doc.order_line" t-as="line">
+
+                        <t t-set="current_subtotal" t-value="current_subtotal + line.price_subtotal" groups="account.group_show_line_subtotals_tax_excluded"/>
+                        <t t-set="current_subtotal" t-value="current_subtotal + line.price_total" groups="account.group_show_line_subtotals_tax_included"/>
+
+                        <tr t-att-class="'bg-200 font-weight-bold o_line_section' if line.display_type == 'line_section' else 'font-italic o_line_note' if line.display_type == 'line_note' else ''">
+                            <t t-if="not line.display_type">
+                                <td name="td_name"><span t-field="line.name"/></td>
+                                <td name="td_name">MY ALG</td>
+                                <td name="td_name"><span t-field="line.product_id.default_code"/></td>
+                                <td name="td_quantity" class="text-right">
+                                    <span t-field="line.product_uom_qty"/>
+                                    <span t-field="line.product_uom"/>
+                                </td>
+                                <td name="td_priceunit" class="text-right">
+                                    <span t-field="line.price_unit"/>
+                                </td>
+                                <td name="td_subtotal" class="text-right o_price_total">
+                                    <span t-field="line.price_subtotal" groups="account.group_show_line_subtotals_tax_excluded"/>
+                                    <span t-field="line.price_total" groups="account.group_show_line_subtotals_tax_included"/>
+                                </td>
+                            </t>
+                            <t t-if="line.display_type == 'line_section'">
+                                <td name="td_section_line" colspan="99">
+                                    <span t-field="line.name"/>
+                                </td>
+                                <t t-set="current_section" t-value="line"/>
+                                <t t-set="current_subtotal" t-value="0"/>
+                            </t>
+                            <t t-if="line.display_type == 'line_note'">
+                                <td name="td_note_line" colspan="99">
+                                    <span t-field="line.name"/>
+                                </td>
+                            </t>
+                        </tr>
+
+                        <t t-if="current_section and (line_last or doc.order_line[line_index+1].display_type == 'line_section')">
+                            <tr class="is-subtotal text-right">
+                                <td name="td_section_subtotal" colspan="99">
+                                    <strong class="mr16">Subtotal</strong>
+                                    <span
+                                        t-esc="current_subtotal"
+                                        t-options='{"widget": "monetary", "display_currency": doc.pricelist_id.currency_id}'
+                                    />
+                                </td>
+                            </tr>
+                        </t>
+                    </t>
+                </tbody>
+            </table>
+	    <div class="row">
+		    <div class="col-8" >
+			    Observaciones :
+                    <p class="text-justify" t-field="doc.note" />
+		    </div>
+		    <div class="col-4" >
+	    		    <div id="total" class="row" name="total">
+				    <div class="col-12">
+		    			    <table class="table table-sm">
+						    <!-- Tax totals -->
+						    <t t-set="tax_totals" t-value="json.loads(doc.tax_totals_json)"/>
+						    <t t-call="account.document_tax_totals"/>
+		    			    </table>
+				    </div>
+	    		    </div>
+		    </div>
+	    </div>
+	    <div class="row">
+		    <div class="col-12" name="conditions">
+			    <p class="font-weight-bold">Nota: Precios más IVA</p>
+			    <p class="text-justify font-weight-bold">El instrumental para la colocación de estos implantes se presenta en perfectas condiciones y solo para el evento convenido,
+				    su devolución debe hacerse limpio y completo, de lo contrario se cobrara una cuota por aseo, la pérdida o daño de una o más piezas
+			    tendrán que ser pagadas de inmediato, a los precios por Trimédicals establecidos.</p>
+		    </div>
+	    </div>
+            <div class="oe_structure"/>
+
+        </div>
+    </t>
+      </template>
+   <template id="report_sale_order_spine">
+               <t t-foreach="docs" t-as="doc">
+                   <t t-set="doc" t-value="doc.with_context({'lang':doc.partner_id.lang})" />
+                   <t t-call="web.html_container">
+                       <t t-call="l10n_mx_reports_spine.report_sale_order_spine_document" t-lang="doc.partner_id.lang"/>
+                    </t>
+            </t>
+  </template>
+
+
+
+
+
+  </data>
+
+  </odoo>
+
