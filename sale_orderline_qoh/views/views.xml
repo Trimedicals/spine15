@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<odoo>
+    <data>
+         <record id="hide_disc_so_form" model="ir.ui.view">
+            <field name="name">disc.sale.order</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook/page/field[@name='order_line']/tree/field[@name='name']" position="after">
+                    <field name="qty_available"/>
+                    <field name="virtual_available"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
